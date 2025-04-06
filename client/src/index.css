@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.react-flow__node {
+  @apply rounded shadow-md;
+}
+
+.react-flow__node-leadSource {
+  @apply bg-green-100 border-2 border-green-500;
+}
+
+.react-flow__node-emailNode {
+  @apply bg-blue-100 border-2 border-blue-500;
+}
+
+.react-flow__node-delayNode {
+  @apply bg-amber-100 border-2 border-amber-500;
+}
+
+.react-flow__handle {
+  @apply bg-gray-400 w-3 h-3;
+}
+
+.dndflow {
+  @apply flex h-full;
+}
+
+.dndflow aside {
+  @apply border-r border-gray-300 p-6 w-64 text-sm;
+}
+
+.dndflow .reactflow-wrapper {
+  @apply flex-grow h-full;
+}
+
+.dndflow .node-item {
+  @apply border border-gray-300 rounded p-3 mb-3 cursor-move;
+}

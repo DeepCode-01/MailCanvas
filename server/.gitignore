@@ -5,9 +5,9 @@
 /.pnp
 .pnp.js
 /middleware
-/config
-/routes
-/services
+
+
+
 
 
 # testing

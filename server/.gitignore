@@ -6,7 +6,6 @@
 .pnp.js
 /models
 /middleware
-/controllers
 /config
 /routes
 /services

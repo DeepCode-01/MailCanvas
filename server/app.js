@@ -14,7 +14,7 @@ import flowRoutes from './routes/flow.routes.js';
 import emailRoutes from './routes/email.routes.js';
 
 // Import agenda service
-import startAgenda  from './services/agenda/index.js';
+import startAgenda from './services/agenda/index.js';
 
 // Initialize Express app
 const app = express();

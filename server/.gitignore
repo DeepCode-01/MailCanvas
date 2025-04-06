@@ -4,6 +4,13 @@
 /node_modules
 /.pnp
 .pnp.js
+/models
+/middleware
+/controllers
+/config
+/routes
+/services
+
 
 # testing
 /coverage

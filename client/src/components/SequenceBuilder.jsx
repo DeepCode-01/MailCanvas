@@ -280,7 +280,7 @@ const SequenceBuilder = () => {
         throw new Error("Not authenticated");
       }
 
-      const response = await fetch("http://localhost:5000/api/sequences", {
+      const response = await fetch("https://mail-backend-26n9.onrender.com/api/sequences", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -301,7 +301,7 @@ const SequenceBuilder = () => {
       );
       if (recipientEmail) {
         const scheduleResponse = await fetch(
-          `http://localhost:5000/api/sequences/${savedSequence._id}/schedule`,
+          `https://mail-backend-26n9.onrender.com/api/sequences/${savedSequence._id}/schedule`,
           {
             method: "POST",
             headers: {

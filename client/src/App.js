@@ -7,7 +7,6 @@ import { useAuth } from './contexts/AuthContext';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
-import Sequences from './pages/Sequences';
 import FlowEditorPage from './pages/FlowEditorPage';
 
 // Layout
@@ -33,13 +32,6 @@ function App() {
           <ProtectedRoute>
             <MainLayout>
               <Dashboard />
-            </MainLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/sequences" element={
-          <ProtectedRoute>
-            <MainLayout>
-              <Sequences />
             </MainLayout>
           </ProtectedRoute>
         } />

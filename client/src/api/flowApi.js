@@ -12,6 +12,38 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+export const createFlow = async (flowData) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/create`, flowData);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating flow:', error);
+    throw error;
+  }
+};
+
+// Get a flow by ID
+export const getFlowById = async (flowId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/${flowId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching flow:', error);
+    throw error;
+  }
+};
+
+// Update a flow
+export const updateFlow = async (flowId, updatedData) => {
+  try {
+    const response = await axios.put(`${API_BASE_URL}/update/${flowId}`, updatedData);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating flow:', error);
+    throw error;
+  }
+};
+
 // Flow operations
 export const saveFlow = async (flowData) => {
   const response = await api.post('/flows', flowData);

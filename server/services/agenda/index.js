@@ -1,6 +1,6 @@
 import Agenda from 'agenda';
 import mongoose from 'mongoose';
-import  sendEmail  from '../email/index.js';
+import sendEmail from '../email/index.js';
 import Email from '../../models/email.model.js';
 
 // Create agenda instance
@@ -16,36 +16,29 @@ const agenda = new Agenda({
 // Define email sending job
 agenda.define('send email', async (job) => {
   const { emailId } = job.attrs.data;
-  
+
   try {
-    // Find email by ID
     const email = await Email.findById(emailId);
-    
-    // Check if email exists and hasn't been sent yet
+
     if (!email || email.sent || email.cancelled) {
       console.log(`Email ${emailId} skipped: already sent, cancelled, or not found`);
       return;
     }
-    
-    // Send email
+
     await sendEmail({
       to: email.to,
       subject: email.subject,
       html: email.body,
       from: email.from
     });
-    
-    // Update email status
+
     email.sent = true;
     email.sentAt = new Date();
     await email.save();
-    
+
     console.log(`Email ${emailId} sent successfully`);
   } catch (error) {
     console.error(`Error sending email ${emailId}:`, error);
-    
-    // Retry logic could be implemented here
-    // For now, we'll just log the error
   }
 });
 
@@ -73,8 +66,6 @@ process.on('SIGTERM', async () => {
   process.exit(0);
 });
 
-export  default {
-  agenda,
-  startAgenda,
-  scheduleEmail
-};
+// ✅ Default and named exports
+export default startAgenda;
+export { agenda, scheduleEmail };

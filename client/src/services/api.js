@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5000/api";
+const API_URL = "https://mail-backend-26n9.onrender.com/api";
 
 // Helper function to get headers with authentication
 const getHeaders = () => {

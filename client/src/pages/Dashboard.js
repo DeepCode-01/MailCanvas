@@ -1,142 +1,197 @@
-// client/src/pages/Dashboard.js
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { listFlows, getScheduledEmails } from '../api/flowApi';
+import { emailsApi } from '../api';
 
-const Dashboard = () => {
-  const [flows, setFlows] = useState([]);
-  const [emails, setEmails] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+function Dashboard() {
+  const [stats, setStats] = useState({
+    totalEmails: 0,
+    sentEmails: 0,
+    pendingEmails: 0,
+    sequences: 0
+  });
+  const [recentEmails, setRecentEmails] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    async function fetchData() {
       try {
-        setIsLoading(true);
-        const [flowsData, emailsData] = await Promise.all([
-          listFlows(),
-          getScheduledEmails()
-        ]);
+        const response = await emailsApi.getHistory();
         
-        setFlows(flowsData);
-        setEmails(emailsData);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching dashboard data:', err);
-        setError('Failed to load dashboard data');
+        // Calculate stats
+        const emails = response.data;
+        const sent = emails.filter(email => email.status === 'sent').length;
+        const pending = emails.filter(email => email.status === 'pending').length;
+        
+        setStats({
+          totalEmails: emails.length,
+          sentEmails: sent,
+          pendingEmails: pending,
+          sequences: new Set(emails.map(email => email.sequenceId)).size
+        });
+        
+        // Get recent emails
+        const recent = emails
+          .sort((a, b) => new Date(b.scheduledTime) - new Date(a.scheduledTime))
+          .slice(0, 5);
+        setRecentEmails(recent);
+      } catch (error) {
+        console.error("Error fetching email data:", error);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
-    };
-
+    }
+    
     fetchData();
   }, []);
 
-  if (isLoading) {
-    return <div className="loading">Loading dashboard...</div>;
-  }
-
-  if (error) {
-    return <div className="error">{error}</div>;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
   }
 
   return (
-    <div className="dashboard">
-      <div className="dashboard-header">
-        <h1>Email Marketing Dashboard</h1>
-        <Link to="/editor/new" className="btn btn-primary">
-          Create New Sequence
-        </Link>
+    <div>
+      <h1 className="text-2xl font-semibold text-gray-900 mb-6">Dashboard</h1>
+      
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="px-4 py-5 sm:p-6">
+            <dt className="text-sm font-medium text-gray-500 truncate">
+              Total Email Sequences
+            </dt>
+            <dd className="mt-1 text-3xl font-semibold text-gray-900">
+              {stats.sequences}
+            </dd>
+          </div>
+        </div>
+        
+        <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="px-4 py-5 sm:p-6">
+            <dt className="text-sm font-medium text-gray-500 truncate">
+              Total Emails
+            </dt>
+            <dd className="mt-1 text-3xl font-semibold text-gray-900">
+              {stats.totalEmails}
+            </dd>
+          </div>
+        </div>
+        
+        <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="px-4 py-5 sm:p-6">
+            <dt className="text-sm font-medium text-gray-500 truncate">
+              Sent Emails
+            </dt>
+            <dd className="mt-1 text-3xl font-semibold text-green-600">
+              {stats.sentEmails}
+            </dd>
+          </div>
+        </div>
+        
+        <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="px-4 py-5 sm:p-6">
+            <dt className="text-sm font-medium text-gray-500 truncate">
+              Pending Emails
+            </dt>
+            <dd className="mt-1 text-3xl font-semibold text-yellow-600">
+              {stats.pendingEmails}
+            </dd>
+          </div>
+        </div>
       </div>
-
-      <div className="dashboard-stats">
-        <div className="stat-card">
-          <h3>Active Sequences</h3>
-          <div className="stat-value">{flows.filter(f => f.isActive).length}</div>
+      
+      {/* Recent Emails */}
+      <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
+        <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
+          <h3 className="text-lg leading-6 font-medium text-gray-900">
+            Recent Emails
+          </h3>
+          <Link to="/sequences" className="text-sm text-blue-600 hover:text-blue-500">
+            View all sequences
+          </Link>
         </div>
-        <div className="stat-card">
-          <h3>Pending Emails</h3>
-          <div className="stat-value">{emails.length}</div>
-        </div>
-        <div className="stat-card">
-          <h3>Total Sequences</h3>
-          <div className="stat-value">{flows.length}</div>
-        </div>
-      </div>
-
-      <div className="dashboard-content">
-        <div className="sequences-section">
-          <h2>Your Email Sequences</h2>
-          {flows.length === 0 ? (
-            <div className="empty-state">
-              <p>You haven't created any email sequences yet.</p>
-              <Link to="/editor/new" className="btn btn-secondary">
-                Create Your First Sequence
-              </Link>
+        <div className="border-t border-gray-200">
+          {recentEmails.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Recipient
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Subject
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Scheduled Time
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {recentEmails.map((email) => (
+                    <tr key={email._id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {email.to}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {email.subject}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          email.status === 'sent' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {email.status === 'sent' ? 'Sent' : 'Pending'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(email.scheduledTime).toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           ) : (
-            <div className="sequence-list">
-              {flows.map((flow) => (
-                <div key={flow._id} className="sequence-card">
-                  <div className="sequence-header">
-                    <h3>{flow.name}</h3>
-                    <span className={`status ${flow.isActive ? 'active' : 'inactive'}`}>
-                      {flow.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
-
-                  <div className="sequence-meta">
-                    <div>Created: {new Date(flow.createdAt).toLocaleDateString()}</div>
-                    <div>Last Edited: {new Date(flow.lastEdited).toLocaleDateString()}</div>
-                  </div>
-
-                  <div className="sequence-stats">
-                    <div>Nodes: {flow.nodes.length}</div>
-                    <div>Emails: {flow.nodes.filter(n => n.type === 'coldEmail').length}</div>
-                  </div>
-
-                  <div className="sequence-actions">
-                    <Link to={`/editor/${flow._id}`} className="btn btn-sm">
-                      Edit
-                    </Link>
-                    <Link to={`/sequence/${flow._id}`} className="btn btn-sm btn-outline">
-                      View Details
-                    </Link>
-                  </div>
-                </div>
-              ))}
+            <div className="text-center py-8 text-gray-500">
+              No emails sent yet. Create a sequence to get started!
             </div>
           )}
         </div>
-
-        <div className="upcoming-emails-section">
-          <h2>Upcoming Emails</h2>
-          {emails.length === 0 ? (
-            <div className="empty-state">
-              <p>No emails scheduled for delivery.</p>
-            </div>
-          ) : (
-            <div className="emails-list">
-              {emails.slice(0, 5).map((email) => (
-                <div key={email._id} className="email-item">
-                  <div className="email-subject">{email.subject}</div>
-                  <div className="email-recipient">To: {email.to}</div>
-                  <div className="email-schedule">
-                    Scheduled for: {new Date(email.scheduledFor).toLocaleString()}
-                  </div>
-                </div>
-              ))}
-              {emails.length > 5 && (
-                <div className="view-more">
-                  <Link to="/emails">View all {emails.length} scheduled emails</Link>
-                </div>
-              )}
-            </div>
-          )}
+      </div>
+      
+      {/* Quick Actions */}
+      <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div className="px-4 py-5 sm:px-6">
+          <h3 className="text-lg leading-6 font-medium text-gray-900">
+            Quick Actions
+          </h3>
+        </div>
+        <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Link
+              to="/sequences" className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 "
+            >
+              View All Sequences
+            </Link>
+            <Link
+              to="/editor"
+              className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Create New Sequence
+            </Link>
+          </div>
         </div>
       </div>
     </div>
   );
-};
+}
 
 export default Dashboard;

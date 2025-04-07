@@ -1,6 +1,6 @@
 import LeadSourceNode from './nodes/LeadSourceNode';
-import EmailNode from './nodes/EmailNode';
-import DelayNode from './nodes/DelayNode';
+import EmailNode from './nodes/ColdEmailNode';
+import DelayNode from './nodes/WaitDelayNode';
 
 const nodeTypes = {
   leadSource: LeadSourceNode,

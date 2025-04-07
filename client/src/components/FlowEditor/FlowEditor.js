@@ -16,7 +16,7 @@ import { toast } from 'react-toastify';
 import nodeTypes from './nodeTypes';
 import FlowControls from './FlowControls';
 import NodeContextMenu from './NodeContextMenu';
-import { createFlow, getFlowById, updateFlow } from '../../api/flowService';
+import { createFlow, getFlowById, updateFlow } from '../../api/flowApi';
 
 const initialNodes = [];
 const initialEdges = [];
